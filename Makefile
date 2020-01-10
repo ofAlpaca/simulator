@@ -3,7 +3,6 @@
 # file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
 DEFS       =
-LIBS       = -pthread
 DEBUGFLAGS = -DDEBUG -g
 CXXFLAGS   = -O0 -std=c++11 -Wall -Wno-sign-compare -Wno-char-subscripts \
              -Wno-invalid-offsetof -Wformat $(DEBUGFLAGS) $(DEFS)
@@ -20,7 +19,7 @@ all: sim
 
 
 sim:	$(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 .dep:
 	$(CXX) -M $(SRCS) $(CXXFLAGS) > .dep

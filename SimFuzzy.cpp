@@ -29,9 +29,9 @@
 #define AV_MAX_CONSENSUS        70
 
 
-#define NUM_NODES             1000
+#define NUM_NODES               200
 #define NUM_MALICIOUS_NODES     15
-#define CONSENSUS_PERCENT       80
+#define CONSENSUS_PERCENT       100
 
 // Latencies in milliseconds
 // E2C - End to core, the latency from a node to a nearby node
@@ -43,12 +43,12 @@
 
 #define NUM_OUTBOUND_LINKS      10
 
-#define UNL_MIN                 20
-#define UNL_MAX                 30
+#define UNL_MIN                 10
+#define UNL_MAX                 20
 #define UNL_THRESH              (UNL_MIN/2) // unl datapoints we have to have before we change position
 
-#define TRUST_MIN				20
-#define TRUST_MAX				120
+#define TRUST_MIN				10
+#define TRUST_MAX				100
 
 #define BASE_DELAY               1 // extra time we delay a message to coalesce/suppress
 
@@ -56,6 +56,7 @@
 
 #define PACKETS_ON_WIRE          3 // how many packets can be "on the wire" per link per direction
                                    // simulates non-infinite bandwidth
+using namespace std;
 
 int nodes_positive=0, nodes_negative=0;
 
@@ -97,35 +98,32 @@ void Node::receiveMessage(const Message& m, Network& network)
 	double unl_balance = 0;
     for (auto &node : fuzzyUnl)
     {
-        if (knowledge[node.first] == 1)
-        {
-        	if(knowledge[n] == 1)node.second = std::min(node.second * 1.05,TRUST_MAX * 1.0);
-        	else node.second = std::max(node.second * 0.95, TRUST_MIN * 1.0);
-        	// std::cout<<node.second<<std::endl;
-            ++unl_count;
-            unl_balance += node.second;
-        }
-        if (knowledge[node.second] == -1)
-        {
-			if(knowledge[n] ==- 1)node.second = std::min(node.second * 1.05, TRUST_MAX * 1.0);
-        	else node.second = std::max(node.second * 0.95, TRUST_MIN * 1.0);
-        	//std::cout<<node.second<<std::endl;
-            ++unl_count;
-            unl_balance -= node.second;
-        }
+
+        unl_balance = unl_balance + (knowledge[node.first] * node.second);
+        ++ unl_count;
+        // if (knowledge[node.first] == 1)
+        // {
+        // 	if(knowledge[n] == 1)node.second = std::min(node.second * 1.05,TRUST_MAX * 1.0);
+        // 	else node.second = std::max(node.second * 0.95, TRUST_MIN * 1.0);
+        // 	// std::cout<<node.second<<std::endl;
+        //     ++unl_count;
+        //     unl_balance += node.second;
+        // }
+        // if (knowledge[node.second] == -1)
+        // {
+		// 	if(knowledge[n] ==- 1)node.second = std::min(node.second * 1.05, TRUST_MAX * 1.0);
+        // 	else node.second = std::max(node.second * 0.95, TRUST_MIN * 1.0);
+        // 	//std::cout<<node.second<<std::endl;
+        //     ++unl_count;
+        //     unl_balance -= node.second;
+        // }
     }
 
-    if (n < NUM_MALICIOUS_NODES) // if we are a malicious node, be contrarian
-        unl_balance = -unl_balance;
-
-    // add a bias in favor of 'no' as time passes
-    // (agree to disagree)
-    unl_balance -= network.master_time / 250;
-
+    unl_balance = unl_balance / unl_count;
     bool pos_change=false;
     if (unl_count >= UNL_THRESH)
     { // We have enough data to make decisions
-        if ( (knowledge[n] == 1) && (unl_balance < (-SELF_WEIGHT)) )
+        if ( (knowledge[n] == 1) && (unl_balance < 0))
         {
             // we switch to -
             knowledge[n] = -1;
@@ -134,7 +132,7 @@ void Node::receiveMessage(const Message& m, Network& network)
             changes.insert(std::make_pair(n, NodeState(n, ++nts[n], -1)));
             pos_change=true;
         }
-        else if ( (knowledge[n] == -1) && (unl_balance > SELF_WEIGHT) )
+        else if ( (knowledge[n] == -1) && (unl_balance > 0) )
         {
             // we switch to +
             knowledge[n] = 1;
@@ -183,7 +181,6 @@ int main(void)
     std::uniform_int_distribution<> r_node(0, NUM_NODES-1);
 
     Node* nodes[NUM_NODES];
-
     // create nodes
     std::cerr << "Creating nodes" << std::endl;
     for (int i = 0; i < NUM_NODES; ++i)
@@ -191,7 +188,7 @@ int main(void)
         nodes[i] = new Node(i, NUM_NODES);
         nodes[i]->e2c_latency = r_e2c(gen);
 
-        // our own position starts as 50/50 split
+        // our own position starts with 50/50 spilt
         if (i%2)
         {
             nodes[i]->knowledge[i] = 1;
@@ -256,24 +253,15 @@ int main(void)
     std::cerr << "Created " << network.messages.size()  << " events" << std::endl;
     
     // run simulation
+    int consensus;
     do
-    {
-        if (nodes_positive > (NUM_NODES * CONSENSUS_PERCENT / 100))
-            break;
-        if (nodes_negative > (NUM_NODES * CONSENSUS_PERCENT / 100))
-            break;
-        
+    {       
         std::map<int, Event>::iterator ev=network.messages.begin();
         if (ev == network.messages.end())
         {
             std::cerr << "Fatal: Radio Silence" << std::endl;
             return 0;
         }
-
-        if ((ev->first / 100) > (network.master_time / 100))
-            std::cerr << "Time: " << ev->first << " ms  " <<
-                nodes_positive << "/" << nodes_negative <<  std::endl;
-        network.master_time = ev->first;
 
         for (const Message& m : ev->second.messages)
         {
@@ -283,13 +271,39 @@ int main(void)
                 nodes[m.to_node]->receiveMessage(m, network);
         }
         
+        if ((ev->first / 100) > (network.master_time / 100)){
+            std::cerr << "Time: " << ev->first << " ms  " <<
+                nodes_positive << "/" << nodes_negative <<  std::endl;
+            for (int i = 0 ; i < NUM_NODES ; ++i){
+                if (nodes[i]->knowledge[i] > 0)
+                    printf(" ");
+                else
+                    printf("O");
+
+                if (i%20==19)
+                    printf("\n");
+            }
+            printf("==================================\n");
+        }
+
+        network.master_time = ev->first;
+
         network.messages.erase(ev);
+
+        if (nodes_positive >= (NUM_NODES * CONSENSUS_PERCENT / 100)){
+            consensus = 1;
+            break;
+        }
+        if (nodes_negative >= (NUM_NODES * CONSENSUS_PERCENT / 100)){
+            consensus = -1;
+            break;
+        }
     } while (1);
 
     int mc = 0;
     for (std::map<int, Event>::iterator it = network.messages.begin(); it != network.messages.end(); ++it)
             mc += it->second.messages.size();
-        std::cerr << "Consensus reached in " << network.master_time << " ms with " << mc
+        std::cerr << "Consensus ["<< consensus << "] reached in " << network.master_time << " ms with " << mc
         << " messages on the wire" << std::endl;
     
     // output results
