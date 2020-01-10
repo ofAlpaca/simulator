@@ -9,7 +9,7 @@ CXXFLAGS   = -O0 -std=c++11 -Wall -Wno-sign-compare -Wno-char-subscripts \
              -Wno-invalid-offsetof -Wformat $(DEBUGFLAGS) $(DEFS)
 HEADERS    = Core.h
 
-SRCS       = Sim.cpp Util.cpp
+SRCS       = SimFuzzy.cpp Util.cpp
 
 OBJS       = $(SRCS:%.cpp=%.o)
 
