@@ -93,11 +93,11 @@ public:
 class Node
 {
 public:
-    int n, e2c_latency;
+    int n, e2c_latency; // n is this node's index number
 
-    std::vector<int> unl;
+    std::vector<std::pair<int,double> > fuzzyUnl; // fuzzyUnl <node index, trustness> 
     std::vector<Link> links;
-
+    
     std::vector<int> nts; // node time stamps
     std::vector<signed char> knowledge; // node states
 
@@ -110,8 +110,8 @@ public:
 
     bool isOnUNL(int j)
     {
-        for (int v : unl)
-            if (v==j) return true;
+        for (auto v : fuzzyUnl)
+            if (v.first==j) return true;
         return false;
     }
 
