@@ -31,7 +31,7 @@
 
 #define NUM_NODES               200
 #define NUM_MALICIOUS_NODES     15
-#define CONSENSUS_PERCENT       100
+#define CONSENSUS_PERCENT       80
 
 // Latencies in milliseconds
 // E2C - End to core, the latency from a node to a nearby node
@@ -98,32 +98,17 @@ void Node::receiveMessage(const Message& m, Network& network)
 	double unl_balance = 0;
     for (auto &node : fuzzyUnl)
     {
-
+        // Aggerating the trustness and the position of fuzzyUNL
         unl_balance = unl_balance + (knowledge[node.first] * node.second);
         ++ unl_count;
-        // if (knowledge[node.first] == 1)
-        // {
-        // 	if(knowledge[n] == 1)node.second = std::min(node.second * 1.05,TRUST_MAX * 1.0);
-        // 	else node.second = std::max(node.second * 0.95, TRUST_MIN * 1.0);
-        // 	// std::cout<<node.second<<std::endl;
-        //     ++unl_count;
-        //     unl_balance += node.second;
-        // }
-        // if (knowledge[node.second] == -1)
-        // {
-		// 	if(knowledge[n] ==- 1)node.second = std::min(node.second * 1.05, TRUST_MAX * 1.0);
-        // 	else node.second = std::max(node.second * 0.95, TRUST_MIN * 1.0);
-        // 	//std::cout<<node.second<<std::endl;
-        //     ++unl_count;
-        //     unl_balance -= node.second;
-        // }
     }
 
+    // Calculating the position balance ratio
     unl_balance = unl_balance / unl_count;
     bool pos_change=false;
     if (unl_count >= UNL_THRESH)
     { // We have enough data to make decisions
-        if ( (knowledge[n] == 1) && (unl_balance < 0))
+        if ( (knowledge[n] == 1) && (unl_balance < 0)) // if the balance is smaller than 0, then switch to -
         {
             // we switch to -
             knowledge[n] = -1;
@@ -132,7 +117,7 @@ void Node::receiveMessage(const Message& m, Network& network)
             changes.insert(std::make_pair(n, NodeState(n, ++nts[n], -1)));
             pos_change=true;
         }
-        else if ( (knowledge[n] == -1) && (unl_balance > 0) )
+        else if ( (knowledge[n] == -1) && (unl_balance > 0) ) // if the balance is larger than 0, then switch to +
         {
             // we switch to +
             knowledge[n] = 1;
@@ -189,6 +174,7 @@ int main(void)
         nodes[i]->e2c_latency = r_e2c(gen);
 
         // our own position starts with 50/50 spilt
+        // Two types of value need to be decided
         if (i%2)
         {
             nodes[i]->knowledge[i] = 1;
@@ -210,7 +196,8 @@ int main(void)
             int trustness = r_trust(gen);
             if ((cn != i) && !nodes[i]->isOnUNL(cn))
             {
-                nodes[i]->fuzzyUnl.push_back({cn, trustness/100.0});	//trustness
+                nodes[i]->fuzzyUnl.push_back({cn, trustness/100.0});
+                // Sampling trustness
                 --unl_count;
             }
         }
@@ -273,12 +260,12 @@ int main(void)
         
         if ((ev->first / 100) > (network.master_time / 100)){
             std::cerr << "Time: " << ev->first << " ms  " <<
-                nodes_positive << "/" << nodes_negative <<  std::endl;
+                nodes_positive << "(+)/" << nodes_negative << "(-)" << std::endl;
             for (int i = 0 ; i < NUM_NODES ; ++i){
-                if (nodes[i]->knowledge[i] > 0)
-                    printf(" ");
+                if (nodes[i]->knowledge[i] == 1)
+                    printf("+");
                 else
-                    printf("O");
+                    printf("-");
 
                 if (i%20==19)
                     printf("\n");
