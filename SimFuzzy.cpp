@@ -106,27 +106,25 @@ void Node::receiveMessage(const Message& m, Network& network)
     // Calculating the position balance ratio
     unl_balance = unl_balance / unl_count;
     bool pos_change=false;
-    if (unl_count >= UNL_THRESH)
-    { // We have enough data to make decisions
-        if ( (knowledge[n] == 1) && (unl_balance < 0)) // if the balance is smaller than 0, then switch to -
-        {
-            // we switch to -
-            knowledge[n] = -1;
-            --nodes_positive;
-            ++nodes_negative;
-            changes.insert(std::make_pair(n, NodeState(n, ++nts[n], -1)));
-            pos_change=true;
-        }
-        else if ( (knowledge[n] == -1) && (unl_balance > 0) ) // if the balance is larger than 0, then switch to +
-        {
-            // we switch to +
-            knowledge[n] = 1;
-            ++nodes_positive;
-            --nodes_negative;
-            changes.insert(std::make_pair(n, NodeState(n, ++nts[n], +1)));
-            pos_change=true;
-        }
+    if ( (knowledge[n] == 1) && (unl_balance < 0)) // if the balance is smaller than 0, then switch to -
+    {
+        // we switch to -
+        knowledge[n] = -1;
+        --nodes_positive;
+        ++nodes_negative;
+        changes.insert(std::make_pair(n, NodeState(n, ++nts[n], -1)));
+        pos_change=true;
     }
+    else if ( (knowledge[n] == -1) && (unl_balance > 0) ) // if the balance is larger than 0, then switch to +
+    {
+        // we switch to +
+        knowledge[n] = 1;
+        ++nodes_positive;
+        --nodes_negative;
+        changes.insert(std::make_pair(n, NodeState(n, ++nts[n], +1)));
+        pos_change=true;
+    }
+
 
     // 3) Broadcast the message
     for (Link& link : links)
