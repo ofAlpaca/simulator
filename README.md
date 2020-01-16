@@ -15,9 +15,9 @@
 整體的執行步驟如下：
 *  **系統參數**
 	* `NUM_NODES`：最直接影響整體效率
-    	* `CONSENSUS_PERCENT`：達成共識所需相同意見的比例
+	* `CONSENSUS_PERCENT`：達成共識所需相同意見的比例
 	* `UNL_MIN/MAX`：FuzzyUNL 個數的上下界
-    	* `TRUST_MIN/MAX`：信賴程度的上下界
+	* `TRUST_MIN/MAX`：信賴程度的上下界
 *  **初始化**
 	* 每個節點根據設定的上下界，產生各自的 FuzzyUNL，包含 `index` 與 `trustness`
 	* 每個節點提出最初的意見，預設兩種意見各半 (+/-)
