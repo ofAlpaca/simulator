@@ -31,14 +31,20 @@
 * **達成共識**
 	* 根據共識決定候選區塊提出與否
 	
-![](https://github.com/ofAlpaca/simulator/blob/master/flowchart.png)
+![](https://github.com/ofAlpaca/simulator/blob/master/pic/flowchart.png)
 
 ## Multiperson Decision Making
-* 每個節點都會有自己的 FuzzyUNL (Fuzzy Unique Node List)，節點對於 UNL 成員有相對應的 trustness preference，再透過下方公式來計算 fuzzy relationship `S` : 
+* 每個節點都會有自己的 FuzzyUNL (Fuzzy Unique Node List)，節點對於 UNL 成員有相對應的 trustness preference，再透過下方公式來計算 fuzzy relationship `S` : (`T(x)`為某 UNL 節點的 trustness 與其意見的乘積)
+
+![](https://github.com/ofAlpaca/simulator/blob/master/pic/eq1.PNG)
+
 * 下方舉例，假設某節點的 FuzzyUNL (value, trustness) 為這三者 `(+1, 0.3)`, `(-1, 0.9)`, `(+1, 0.4)`
 
-											    
+![](https://github.com/ofAlpaca/simulator/blob/master/pic/eq2.PNG)			
+
 * 故可以得此 fuzzy preference relation `S` :
+
+![](https://github.com/ofAlpaca/simulator/blob/master/pic/eq3.PNG)
 											       
 * 由於本共識演算法只有 +1 與 -1 兩種意見可選擇，因此省略 $\alpha-cut$ 的部分，最終此「節點所認知的共識」結果為 -1。
 
