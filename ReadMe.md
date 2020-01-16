@@ -1,4 +1,4 @@
-onsensus
+# Ripple Consensus with Fuzzy Multiperson Decision Making
 
 ## 組員
 * 江紹賢 P76074444
@@ -18,13 +18,13 @@ onsensus
         * `CONSENSUS_PERCENT`：達成共識所需相同意見的比例
 	    * `UNL_MIN/MAX`：FuzzyUNL 個數的上下界
 	        * `TRUST_MIN/MAX`：信賴程度的上下界
-		*  初始化
-		    * 每個節點根據設定的上下界，產生各自的 FuzzyUNL，包含 `index` 與 `trustness`
-		        * 每個節點提出最初的意見，預設兩種意見各半 (+/-)
+	*  **初始化**
+		* 每個節點根據設定的上下界，產生各自的 FuzzyUNL，包含 `index` 與 `trustness`
+	* 每個節點提出最初的意見，預設兩種意見各半 (+/-)
 			    * 開始廣播各自的意見，進行最初的投票
-			    *  投票
-			        * 每個節點會接收各自 FuzzyUNL 的廣播訊息
-				    * 將收集的意見與信賴程度進行 multiperson decision making 後，會得到 + 或 - 的意見
+	* **投票** 
+		* 每個節點會接收各自 FuzzyUNL 的廣播訊息
+			* 將收集的意見與信賴程度進行 multiperson decision making 後，會得到 + 或 - 的意見
 				        * 自身意見會根據計算出的值決定是否更動，並廣播出去
 					    * 系統會收集整體的意見，計算該輪相同意見是否有超過比例
 					        * 達成共識就結束投票，反之則進行下一輪投票
