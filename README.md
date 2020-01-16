@@ -30,11 +30,12 @@
 	* 達成共識就結束投票，反之則進行下一輪投票
 * **達成共識**
 	* 根據共識決定候選區塊提出與否
-
+	
+![](https://github.com/ofAlpaca/simulator/blob/master/flowchart.png)
 
 ## Multiperson Decision Making
 * 每個節點都會有自己的 FuzzyUNL (Fuzzy Unique Node List)，節點對於 UNL 成員有相對應的 trustness preference，再透過下方公式來計算 fuzzy relationship `S` : 
-* 下方舉例，假設某節點的 FuzzyUNL (value, trustness) 為 `{(+1, 0.3), (-1, 0.9), (+1, 0.4)\}`
+* 下方舉例，假設某節點的 FuzzyUNL (value, trustness) 為這三者 `(+1, 0.3)`, `(-1, 0.9)`, `(+1, 0.4)`
 
 											    
 * 故可以得此 fuzzy preference relation `S` :
